@@ -1,6 +1,15 @@
 version: '3'
 services:
 
+  db:
+    image: mongo:4.2.0
+    container_name: db
+    ports:
+      - "27017:27017"
+    expose:
+      - "27017"
+    restart: always
+
   video-streaming:
     image: video-streaming
     build: 
@@ -31,5 +40,9 @@ services:
       - "4002:80"
     environment:
       - PORT=80
+      - DBHOST=mongodb://db:27017
+      - DBNAME=history
       - NODE_ENV=development
+    depends_on:
+      - db
     restart: "no"

@@ -1,5 +1,29 @@
 const express = require("express");
 const fs = require("fs");
+const request = require("request");
+
+function sendViewedMessage(videoPath) {
+    const postOptions = { // Options to the HTTP POST request.
+        body: { 
+            videoPath: videoPath 
+        },
+        json: true
+    };
+
+    request.post( // Send the "viewed" message to the history microservice.
+        "http://history/viewed",
+        postOptions,
+        (err, res) => {
+            if (err)  {
+                console.error("Failed to send 'viewed' message!");
+                console.error(err && err.stack || err);
+            }
+            else {
+                console.log("Sent 'viewed' message to history microservice.");
+            }
+        }
+    );
+}
 
 //
 // Setup event handlers.
@@ -21,6 +45,7 @@ function setupHandlers(app) {
             });
     
             fs.createReadStream(videoPath).pipe(res);
+            sendViewedMessage(videoPath);
         });
     });
 }
