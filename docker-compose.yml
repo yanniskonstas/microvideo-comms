@@ -1,6 +1,26 @@
 version: '3'
 services:
 
+  db:
+    image: mongo:4.2.0
+    container_name: db
+    ports:
+      - "27017:27017"
+    expose:
+      - "27017"
+    restart: always
+
+  rabbit:
+    image: rabbitmq:3.8.1-management
+    container_name: rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    expose:
+      - "5672"
+      - "15672"
+    restart: always
+
   video-streaming:
     image: video-streaming
     build: 
@@ -15,7 +35,10 @@ services:
       - "4001:80"
     environment:
       - PORT=80
+      - RABBIT=amqp://guest:guest@rabbit:5672
       - NODE_ENV=development
+    depends_on:
+      - rabbit
     restart: "no"
 
   history:
@@ -28,8 +51,14 @@ services:
       - /tmp/history/npm-cache:/root/.npm:z
       - ./history/src:/usr/src/app/src:z
     ports:
-      - "4002:80"
+     - "4002:80"
     environment:
       - PORT=80
+      - RABBIT=amqp://guest:guest@rabbit:5672
+      - DBHOST=mongodb://db:27017
+      - DBNAME=history
       - NODE_ENV=development
+    depends_on:
+      - db
+      - rabbit
     restart: "no"
